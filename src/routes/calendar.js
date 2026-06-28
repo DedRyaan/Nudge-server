@@ -39,6 +39,7 @@ router.get('/events', async (req, res) => {
       type: categorizeEvent(event.summary),
       color: '#5b8def',
       htmlLink: event.htmlLink,
+      isAllDay: !event.start?.dateTime && !!event.start?.date,
     }));
 
     res.json({ 
