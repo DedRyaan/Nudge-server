@@ -1,0 +1,22 @@
+{
+  "name": "nudge-server",
+  "version": "1.0.0",
+  "description": "Nudge AI Scheduling Assistant — Backend Orchestrator",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.4.0",
+    "googleapis": "^148.0.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.8.3"
+  }
+}
