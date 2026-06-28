@@ -116,6 +116,7 @@ export function startCalendarSync(io) {
           console.log(`[CalendarSync] Registering Google Calendar webhook for user ${userId} (Channel: ${channelId})`);
           
           await calendar.events.watch({
+            calendarId: 'primary',
             requestBody: {
               id: channelId,
               type: 'web_hook',

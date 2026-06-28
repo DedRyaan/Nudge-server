@@ -41,7 +41,10 @@ router.get('/events', async (req, res) => {
       htmlLink: event.htmlLink,
     }));
 
-    res.json({ events });
+    res.json({ 
+      events,
+      timeZone: response.data.timeZone || 'UTC'
+    });
   } catch (error) {
     console.error('Calendar fetch error:', error.message);
     
