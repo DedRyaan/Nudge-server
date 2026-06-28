@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -56,13 +57,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Serve static frontend in production
+// Serve static frontend in production (if built locally together)
 if (process.env.NODE_ENV === 'production') {
   const clientDist = join(__dirname, '../../client/dist');
-  app.use(express.static(clientDist));
-  app.get('*all', (req, res) => {
-    res.sendFile(join(clientDist, 'index.html'));
-  });
+  if (existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.get('*all', (req, res) => {
+      res.sendFile(join(clientDist, 'index.html'));
+    });
+  } else {
+    // If running server independently without client folder (e.g. Render backend with Cloudflare Pages frontend)
+    app.get('/', (req, res) => {
+      res.send('⚡ Nudge Orchestrator API is running!');
+    });
+  }
 }
 
 // Error handling
