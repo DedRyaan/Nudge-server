@@ -20,12 +20,20 @@ import whatsappRoutes from './routes/whatsapp.js';
 import gmailRoutes from './routes/gmail.js';
 import { startCalendarSync } from './services/calendarSync.js';
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.CLIENT_URL ? process.env.CLIENT_URL.replace(/\/$/, '') : null,
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ["GET", "POST"]
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -34,7 +42,14 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(morgan('dev'));
