@@ -27,11 +27,29 @@ const allowedOrigins = [
   'http://localhost:3000'
 ].filter(Boolean);
 
+const checkOrigin = (origin, callback) => {
+  // Allow requests with no origin (like mobile apps or curl requests)
+  if (!origin) {
+    return callback(null, true);
+  }
+  
+  const isAllowed = allowedOrigins.includes(origin) || 
+                    origin.endsWith('.pages.dev') || 
+                    origin.includes('localhost') || 
+                    origin.includes('127.0.0.1');
+
+  if (isAllowed) {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+};
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: checkOrigin,
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -42,14 +60,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: checkOrigin,
   credentials: true,
 }));
 app.use(morgan('dev'));
