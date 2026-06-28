@@ -80,11 +80,10 @@ router.post('/welcome', async (req, res) => {
       .replace(/\//g, '_')
       .replace(/=+$/, '');
       
-    await gmail.users.messages.insert({
+    await gmail.users.messages.send({
       userId: 'me',
       requestBody: {
-        raw: encodedMessage,
-        labelIds: ['INBOX', 'UNREAD']
+        raw: encodedMessage
       }
     });
     

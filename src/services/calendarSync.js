@@ -32,8 +32,7 @@ function mapEvent(event) {
     type: categorizeEvent(event.summary),
     color: '#5b8def',
     htmlLink: event.htmlLink,
-    status: event.status, // 'confirmed', 'tentative', or 'cancelled'
-    isAllDay: !event.start?.dateTime && !!event.start?.date
+    status: event.status // 'confirmed', 'tentative', or 'cancelled'
   };
 }
 
