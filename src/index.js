@@ -40,6 +40,12 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 
+// Attach socket.io to request
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/calendar', calendarRoutes);

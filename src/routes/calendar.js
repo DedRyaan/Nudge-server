@@ -164,6 +164,23 @@ router.delete('/events/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete event' });
   }
 });
+
+// POST /api/calendar/webhook — handle push notifications from Google Calendar
+router.post('/webhook', (req, res) => {
+  const userId = req.headers['x-goog-channel-token'];
+  const resourceState = req.headers['x-goog-resource-state'];
+  const channelId = req.headers['x-goog-channel-id'];
+  
+  console.log(`[Webhook] Received calendar notification: channel=${channelId}, state=${resourceState}, user=${userId}`);
+
+  if (resourceState === 'exists' && userId && req.io) {
+    console.log(`[Webhook] Pushing CALENDAR_UPDATED to user: ${userId}`);
+    req.io.to(userId).emit('CALENDAR_UPDATED', { timestamp: new Date().toISOString() });
+  }
+
+  res.status(200).send('OK');
+});
+
 // Helper: categorize events by title keywords
 function categorizeEvent(summary = '') {
   const lower = summary.toLowerCase();
