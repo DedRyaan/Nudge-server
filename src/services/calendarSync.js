@@ -4,6 +4,38 @@ import crypto from 'crypto';
 const activeSyncs = new Map();
 const activeWebhooks = new Set(); // Track users with active webhooks to avoid duplicate registrations
 
+// Helper: categorize events by title keywords (matches routes/calendar.js)
+function categorizeEvent(summary = '') {
+  const lower = summary.toLowerCase();
+  if (lower.includes('class') || lower.includes('lecture') || lower.includes('study') || lower.includes('prof') || lower.includes('exam')) {
+    return 'academic';
+  }
+  if (lower.includes('gym') || lower.includes('lunch') || lower.includes('dinner') || lower.includes('personal')) {
+    return 'personal';
+  }
+  if (lower.includes('meeting') || lower.includes('standup') || lower.includes('review') || lower.includes('sync')) {
+    return 'meeting';
+  }
+  return 'event';
+}
+
+// Helper to map Google API event format to Nudge frontend event format
+function mapEvent(event) {
+  return {
+    id: event.id,
+    title: event.summary || 'Untitled',
+    description: event.description || '',
+    start: event.start?.dateTime || event.start?.date,
+    end: event.end?.dateTime || event.end?.date,
+    location: event.location || '',
+    source: 'google',
+    type: categorizeEvent(event.summary),
+    color: '#5b8def',
+    htmlLink: event.htmlLink,
+    status: event.status // 'confirmed', 'tentative', or 'cancelled'
+  };
+}
+
 export function startCalendarSync(io) {
   io.on('connection', (socket) => {
     
@@ -46,7 +78,11 @@ export function startCalendarSync(io) {
             if (response.data.items && response.data.items.length > 0) {
               if (!isFirstPoll) {
                  console.log(`[CalendarSync] Polling detected ${response.data.items.length} changes for client ${socket.id}`);
-                 socket.emit('CALENDAR_UPDATED', { timestamp: new Date().toISOString() });
+                 const mapped = response.data.items.map(mapEvent);
+                 socket.emit('CALENDAR_UPDATED', { 
+                   timestamp: new Date().toISOString(),
+                   updatedEvents: mapped
+                 });
               }
             }
             
@@ -80,12 +116,11 @@ export function startCalendarSync(io) {
           console.log(`[CalendarSync] Registering Google Calendar webhook for user ${userId} (Channel: ${channelId})`);
           
           await calendar.events.watch({
-            calendarId: 'primary',
             requestBody: {
               id: channelId,
               type: 'web_hook',
               address: `${webhookUrl}/api/calendar/webhook`,
-              token: userId, // Google passes this back as X-Goog-Channel-Token header
+              token: userId,
             },
           });
           
