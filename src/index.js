@@ -54,6 +54,11 @@ app.use('/api/agents', agentRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/gmail', gmailRoutes);
 
+// Google Search Console Verification
+app.get('/google768c6a19fcd96aa1.html', (req, res) => {
+  res.send('google-site-verification: google768c6a19fcd96aa1.html');
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
